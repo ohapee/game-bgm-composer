@@ -12,7 +12,8 @@ import {
   RESTRAINT_LEVELS,
   DURATIONS,
   NEGATIVE_OPTIONS,
-  AI_TARGETS
+  AI_TARGETS,
+  TITLE_SUGGESTIONS
 } from './data.js';
 
 import { buildPrompt, buildNegativePrompt, buildTimelineData } from './prompt_generator.js';
@@ -31,6 +32,7 @@ import {
 
 // アプリケーションの状態
 const state = {
+  trackTitle: '',
   moods: new Set(['field']),
   insts: new Set(['square_lead', 'arpeggio', 'fm_bass', 'retro_drums']),
   sfx: new Set(['pico', 'coin', 'jump']),
@@ -184,9 +186,20 @@ function renderPresets() {
   });
 }
 
+// プリセット名入力欄の案内更新
+function updatePresetPlaceholder() {
+  const pInput = document.getElementById('presetNameInput');
+  if (pInput) {
+    pInput.placeholder = state.trackTitle
+      ? `プリセット名 (空欄なら「${state.trackTitle}」で保存)`
+      : 'プリセット名 (例: ボス戦 第2形態)';
+  }
+}
+
 // 状態の適用とUIの同期
 function applyState(obj) {
   if (!obj) return;
+  state.trackTitle = obj.trackTitle || '';
   state.moods = new Set(obj.moods || []);
   state.insts = new Set(obj.insts || []);
   state.sfx = new Set(obj.sfx || []);
@@ -200,6 +213,13 @@ function applyState(obj) {
   state.lang = obj.lang || 'en';
   state.aiTarget = obj.aiTarget || 'flow';
   state.embedTimeline = Boolean(obj.embedTimeline);
+
+  // 曲名入力の同期
+  const trackTitleInput = document.getElementById('trackTitleInput');
+  if (trackTitleInput) {
+    trackTitleInput.value = state.trackTitle;
+  }
+  updatePresetPlaceholder();
 
   // UIコントロールの同期
   buildChips(document.getElementById('moodChips'), MOODS, state.moods, maybeRegenerate);
@@ -296,6 +316,29 @@ function init() {
   // スクリプト生成ボタン
   document.getElementById('genBtn').addEventListener('click', generate);
 
+  // 曲名・テーマ入力
+  const trackTitleInput = document.getElementById('trackTitleInput');
+  if (trackTitleInput) {
+    trackTitleInput.addEventListener('input', (e) => {
+      state.trackTitle = e.target.value;
+      updatePresetPlaceholder();
+      maybeRegenerate();
+    });
+  }
+
+  // 🎲 ランダム曲名ボタン
+  const randomTitleBtn = document.getElementById('randomTitleBtn');
+  if (randomTitleBtn) {
+    randomTitleBtn.addEventListener('click', () => {
+      const randomTitle = TITLE_SUGGESTIONS[Math.floor(Math.random() * TITLE_SUGGESTIONS.length)];
+      state.trackTitle = randomTitle;
+      if (trackTitleInput) trackTitleInput.value = randomTitle;
+      updatePresetPlaceholder();
+      maybeRegenerate();
+      flash(`曲名「${randomTitle}」を設定しました`);
+    });
+  }
+
   // 🎲 おまかせ生成
   document.getElementById('randomBtn').addEventListener('click', () => {
     function sampleIds(items, min, max) {
@@ -303,6 +346,10 @@ function init() {
       const shuffled = [...items].sort(() => Math.random() - 0.5);
       return shuffled.slice(0, n).map(i => i.id);
     }
+
+    state.trackTitle = TITLE_SUGGESTIONS[Math.floor(Math.random() * TITLE_SUGGESTIONS.length)];
+    if (trackTitleInput) trackTitleInput.value = state.trackTitle;
+    updatePresetPlaceholder();
 
     state.moods = new Set(sampleIds(MOODS, 1, 2));
     state.insts = new Set(sampleIds(INSTRUMENTS, 3, 5));
@@ -314,11 +361,15 @@ function init() {
     applyState(state);
     generate();
     saveLastState(state);
-    flash('🎲 おまかせ設定を適用しました');
+    flash(`🎲 おまかせ設定（曲名: ${state.trackTitle}）を適用しました`);
   });
 
   // リセット
   document.getElementById('resetBtn').addEventListener('click', () => {
+    state.trackTitle = '';
+    if (trackTitleInput) trackTitleInput.value = '';
+    updatePresetPlaceholder();
+
     state.moods = new Set(['field']);
     state.insts = new Set(['square_lead', 'arpeggio', 'fm_bass', 'retro_drums']);
     state.sfx = new Set(['pico', 'coin', 'jump']);
@@ -340,9 +391,15 @@ function init() {
   // プリセット保存
   document.getElementById('savePresetBtn').addEventListener('click', () => {
     const input = document.getElementById('presetNameInput');
-    const name = input.value.trim();
+    let name = input.value.trim();
+
+    // プリセット名が未入力の場合、曲名があればそれをプリセット名として自動適用
+    if (!name && state.trackTitle) {
+      name = state.trackTitle.trim();
+    }
+
     if (!name) {
-      flash('プリセット名を入力してください');
+      flash('プリセット名または曲名を入力してください');
       return;
     }
     if (savePreset(name, state)) {

@@ -112,6 +112,8 @@ export function buildPrompt(state) {
 
   let prompt = '';
 
+  const title = (state.trackTitle || '').trim();
+
   if (state.lang === 'ja') {
     const moodText = moods.length ? moods.map(m => m.ja).join('・') : '落ち着いたゲームミュージック';
     const instText = insts.length ? joinList(insts.map(i => i.ja), 'ja') : 'レトロなチップチューン編成';
@@ -126,12 +128,15 @@ export function buildPrompt(state) {
       restraintText = ` ${base}${extra}`;
     }
 
+    const titlePrefix = title ? `曲名「${title}」の世界観を表現した、` : '';
+
     if (aiTarget === 'suno_udio') {
-      prompt = `[スタイル: 8-bit チップチューン, ${state.tempo} BPM, ${key.baseNote}調]\n` +
-        `ゲームBGM。雰囲気は${moodText}。` +
+      const headerTitle = title ? `[タイトル: ${title}] ` : '';
+      prompt = `${headerTitle}[スタイル: 8-bit チップチューン, ${state.tempo} BPM, ${key.baseNote}調]\n` +
+        `${titlePrefix}ゲームBGM。雰囲気は${moodText}。` +
         `編成: ${instText}。${key.ja}を使用${sfxText}。${restraintText}`;
     } else {
-      prompt = `テンポ${state.tempo}BPMのゲームBGM。${moodText}な雰囲気。` +
+      prompt = `${titlePrefix}テンポ${state.tempo}BPMのゲームBGM。${moodText}な雰囲気。` +
         `編成は${instText}を中心に、${key.ja}を使用${sfxText}。${restraintText}`;
     }
 
@@ -158,11 +163,14 @@ export function buildPrompt(state) {
       restraintText = ` ${base}${extra}`;
     }
 
+    const titleThemed = title ? ` themed around "${title}",` : '';
+
     if (aiTarget === 'suno_udio') {
-      prompt = `[Genre: 8-bit Chiptune, Video Game OST] [Tempo: ${state.tempo} BPM] [Key: ${key.baseNote} ${key.scaleType}]\n` +
-        `A video game background music track with ${moodText}. Built around ${instText}, featuring ${key.en}.${sfxText}${restraintText}`;
+      const headerTitle = title ? `[Title: ${title}] ` : '';
+      prompt = `${headerTitle}[Genre: 8-bit Chiptune, Video Game OST] [Tempo: ${state.tempo} BPM] [Key: ${key.baseNote} ${key.scaleType}]\n` +
+        `A video game track${titleThemed} with ${moodText}. Built around ${instText}, featuring ${key.en}.${sfxText}${restraintText}`;
     } else {
-      prompt = `A ${state.tempo} BPM video game background music track with ${moodText}. ` +
+      prompt = `A ${state.tempo} BPM video game background music track${titleThemed} with ${moodText}. ` +
         `Built around ${instText}, with ${key.en}.${sfxText}${restraintText}`;
     }
 

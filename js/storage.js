@@ -10,6 +10,7 @@ const PRESETS_KEY = 'gamebgm-composer-presets-v2';
  */
 export function serializeState(state) {
   return {
+    trackTitle: state.trackTitle || '',
     moods: [...state.moods],
     insts: [...state.insts],
     sfx: [...state.sfx],
