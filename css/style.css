@@ -1,0 +1,841 @@
+/* ==========================================================================
+   GAME BGM SCRIPT COMPOSER — BAUHAUS GEOMETRIC PIXEL ART EDITION
+   トーン＆マナー: バウハウス幾何学ピクセルアート / ミニマリスト・アーケード
+   ========================================================================== */
+
+:root {
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+
+  /* バウハウス・アーケード パレット (Light / Default) */
+  --bg: #e2d7ec;                 /* 画像の淡いラベンダー/ペールライラック */
+  --bg-dots: rgba(147, 126, 172, 0.22);
+  --bg-panel: #ffffff;           /* クリーンなホワイトパネル */
+  --bg-panel-alt: #f6f2fa;
+  --bg-input: #ffffff;
+  --bg-console: #2d3142;         /* アーケードコントローラー天板のチャコール */
+  --bg-screen: #fbf9fd;
+
+  --text-main: #18151c;          /* 漆黒〜ダークチャコール */
+  --text-muted: #5e586c;         /* 補助テキスト */
+  --border-color: #18151c;       /* 幾何学的な太い黒フチ */
+
+  /* バウハウス原色（Primary Arcade Colors） */
+  --arcade-red: #e5383b;         /* ジョイスティックの赤球 */
+  --arcade-red-dark: #b81d24;
+  --arcade-yellow: #facc15;      /* 鮮やかな黄色ボタン */
+  --arcade-blue: #2563eb;        /* コバルトブルー */
+  --arcade-green: #10b981;       /* エメラルドグリーン */
+  --arcade-orange: #f97316;      /* ウォームオレンジ */
+  --arcade-purple: #8b5cf6;      /* ビビッドパープル */
+  
+  --shadow-solid: 4px 4px 0px var(--border-color);
+  --shadow-button: 3px 3px 0px var(--border-color);
+  --shadow-small: 2px 2px 0px var(--border-color);
+
+  --scanline: rgba(24, 21, 28, 0.15);
+}
+
+/* ダークモード (ナイトアーケード) */
+:root[data-theme="dark"] {
+  --bg: #1c1824;
+  --bg-dots: rgba(139, 92, 246, 0.18);
+  --bg-panel: #272332;
+  --bg-panel-alt: #322d40;
+  --bg-input: #1f1b29;
+  --bg-console: #15131c;
+  --bg-screen: #191622;
+
+  --text-main: #f5f2fa;
+  --text-muted: #aba2bc;
+  --border-color: #0b090f;
+
+  --arcade-red: #ef4444;
+  --arcade-yellow: #fbbf24;
+  --arcade-blue: #3b82f6;
+  --arcade-green: #10b981;
+  --arcade-orange: #fb923c;
+  --arcade-purple: #a78bfa;
+
+  --shadow-solid: 4px 4px 0px #0b090f;
+  --shadow-button: 3px 3px 0px #0b090f;
+  --shadow-small: 2px 2px 0px #0b090f;
+  --scanline: rgba(0, 0, 0, 0.4);
+}
+
+/* CRT スキャンライン */
+body.crt-enabled::before {
+  content: " ";
+  display: block;
+  position: fixed;
+  top: 0; left: 0; bottom: 0; right: 0;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, var(--scanline) 50%);
+  background-size: 100% 4px;
+  z-index: 999;
+  pointer-events: none;
+}
+
+html {
+  scroll-padding-top: env(safe-area-inset-top, 0px);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background-color: var(--bg);
+  /* ハーフトーン風の微細な幾何学ドットグリッド背景 */
+  background-image: radial-gradient(var(--bg-dots) 1.5px, transparent 1.5px);
+  background-size: 18px 18px;
+  color: var(--text-main);
+  font-family: "Space Grotesk", "Noto Sans JP", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  line-height: 1.55;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+/* 特徴的な幾何学・レトロフォント指定 */
+.font-display {
+  font-family: "Righteous", "Space Grotesk", cursive, sans-serif;
+  letter-spacing: 0.04em;
+}
+
+.pixel {
+  font-family: "Press Start 2P", monospace;
+}
+
+.wrap {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 30px 20px 80px;
+}
+
+/* ==========================================================================
+   ヘッダー（ポスター・アーケードコントローラー風）
+   ========================================================================== */
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  background: var(--bg-panel);
+  border: 3px solid var(--border-color);
+  box-shadow: var(--shadow-solid);
+  padding: 18px 24px;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+  position: relative;
+}
+
+/* バウハウス風の幾何学デコレーションバー */
+header::before {
+  content: "";
+  position: absolute;
+  top: -3px; left: -3px; right: -3px;
+  height: 6px;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--arcade-red) 0px, var(--arcade-red) 24px,
+    var(--arcade-yellow) 24px, var(--arcade-yellow) 48px,
+    var(--arcade-blue) 48px, var(--arcade-blue) 72px,
+    var(--arcade-green) 72px, var(--arcade-green) 96px
+  );
+  border: 3px solid var(--border-color);
+  border-bottom: none;
+}
+
+.brand-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.brand-icon {
+  width: 52px;
+  height: 52px;
+  border: 2.5px solid var(--border-color);
+  box-shadow: 2px 2px 0px var(--border-color);
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.brand-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  image-rendering: pixelated;
+}
+
+.brand h1 {
+  font-size: clamp(1.15rem, 2.2vw, 1.65rem);
+  margin: 0 0 4px;
+  line-height: 1.2;
+  color: var(--text-main);
+  text-transform: uppercase;
+}
+
+.brand .subtitle {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.brand p.desc {
+  margin: 4px 0 0;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  max-width: 56ch;
+}
+
+.header-controls {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.theme-btn {
+  background: var(--bg-panel-alt);
+  border: 2px solid var(--border-color);
+  box-shadow: 2px 2px 0px var(--border-color);
+  color: var(--text-main);
+  padding: 8px 14px;
+  font-family: "Space Grotesk", sans-serif;
+  font-weight: 700;
+  font-size: 0.78rem;
+  cursor: pointer;
+  letter-spacing: 0.05em;
+  transition: all 0.1s;
+}
+
+.theme-btn:hover {
+  background: var(--arcade-yellow);
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0px var(--border-color);
+}
+
+.theme-btn:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0px var(--border-color);
+}
+
+.theme-btn.on {
+  background: var(--arcade-blue);
+  color: #ffffff;
+}
+
+/* ==========================================================================
+   2カラムレイアウト
+   ========================================================================== */
+.grid {
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: 26px;
+  align-items: start;
+}
+
+@media (max-width: 960px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* パネル（カード） */
+section.panel {
+  background: var(--bg-panel);
+  border: 2.5px solid var(--border-color);
+  box-shadow: var(--shadow-solid);
+  padding: 20px 22px;
+  margin-bottom: 22px;
+  position: relative;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+h2 {
+  font-family: "Righteous", "Space Grotesk", sans-serif;
+  font-size: 0.92rem;
+  font-weight: 400;
+  color: var(--text-main);
+  margin: 0 0 16px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 2px dashed var(--border-color);
+  padding-bottom: 8px;
+}
+
+h2 .sub-tag {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 2px 8px;
+  background: var(--arcade-yellow);
+  border: 1.5px solid var(--border-color);
+  box-shadow: 1.5px 1.5px 0px var(--border-color);
+  color: #18151c;
+}
+
+/* ==========================================================================
+   アーケードボタン風チップ
+   ========================================================================== */
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 7px 12px;
+  border: 2px solid var(--border-color);
+  box-shadow: var(--shadow-small);
+  background: var(--bg-panel-alt);
+  color: var(--text-main);
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.1s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.chip:hover {
+  background: #ffffff;
+  transform: translate(-1px, -1px);
+  box-shadow: var(--shadow-button);
+}
+
+.chip:active {
+  transform: translate(2px, 2px);
+  box-shadow: 0px 0px 0px var(--border-color);
+}
+
+/* 選択されたチップ（バウハウス原色ハイライト） */
+.chip.on {
+  background: var(--arcade-blue);
+  color: #ffffff;
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0px var(--border-color);
+  font-weight: 700;
+}
+
+/* パネルごとのアクティブカラーバリエーション */
+#moodChips .chip.on {
+  background: var(--arcade-red);
+}
+
+#instChips .chip.on {
+  background: var(--arcade-blue);
+}
+
+#sfxChips .chip.on {
+  background: var(--arcade-yellow);
+  color: #18151c;
+}
+
+#restraintChips .chip.on {
+  background: var(--arcade-orange);
+  color: #ffffff;
+}
+
+#negativeChips .chip.on {
+  background: #374151;
+  color: #ffffff;
+}
+
+#durationChips .chip.on {
+  background: var(--arcade-purple);
+  color: #ffffff;
+}
+
+/* ==========================================================================
+   フォーム・コントロール
+   ========================================================================== */
+.field {
+  margin-bottom: 16px;
+}
+
+.field:last-child {
+  margin-bottom: 0;
+}
+
+label.small {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+select, input[type="text"] {
+  font-family: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  background: var(--bg-input);
+  color: var(--text-main);
+  border: 2px solid var(--border-color);
+  box-shadow: inset 2px 2px 0px rgba(0, 0, 0, 0.06);
+  padding: 9px 12px;
+  width: 100%;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+select:focus, input[type="text"]:focus {
+  border-color: var(--arcade-blue);
+  box-shadow: 2px 2px 0px var(--arcade-blue);
+}
+
+/* プリセット管理 */
+.preset-item {
+  display: inline-flex;
+  align-items: center;
+  box-shadow: var(--shadow-small);
+}
+
+.preset-item .chip {
+  box-shadow: none;
+  border-right: none;
+}
+
+.preset-del {
+  border: 2px solid var(--border-color);
+  background: var(--bg-panel-alt);
+  color: var(--arcade-red);
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 0.9rem;
+  padding: 7px 10px;
+  line-height: 1;
+  transition: all 0.1s;
+}
+
+.preset-del:hover {
+  background: var(--arcade-red);
+  color: #ffffff;
+}
+
+.preset-empty {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  font-style: italic;
+}
+
+.preset-tools {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+/* テンポ & スライダー */
+.tempo-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+input[type="range"] {
+  flex: 1;
+  accent-color: var(--arcade-red);
+  cursor: pointer;
+}
+
+.tempo-readout {
+  font-size: 1.25rem;
+  min-width: 100px;
+  text-align: right;
+  color: var(--arcade-red);
+  font-weight: bold;
+}
+
+.tempo-readout span {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+}
+
+/* ==========================================================================
+   アーケードコントローラー風 8bitシンセプレビュアー
+   ========================================================================== */
+.preview-player {
+  background: var(--bg-console);
+  border: 2.5px solid var(--border-color);
+  box-shadow: var(--shadow-button);
+  padding: 14px 16px;
+  margin-top: 16px;
+  position: relative;
+}
+
+/* コントローラー天板の幾何学トリム */
+.preview-player::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--arcade-yellow) 0px, var(--arcade-yellow) 12px,
+    var(--arcade-blue) 12px, var(--arcade-blue) 24px,
+    var(--arcade-red) 24px, var(--arcade-red) 36px
+  );
+}
+
+.preview-main-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.preview-btn {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 9px 16px;
+  border: 2px solid var(--border-color);
+  box-shadow: 2px 2px 0px #000000;
+  background: var(--arcade-yellow);
+  color: #18151c;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.1s;
+}
+
+.preview-btn:hover {
+  background: #ffffff;
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0px #000000;
+}
+
+.preview-btn:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0px #000000;
+}
+
+.preview-btn.playing {
+  background: var(--arcade-red);
+  color: #ffffff;
+  animation: pulse 1s infinite alternate;
+}
+
+@keyframes pulse {
+  0% { filter: brightness(1); }
+  100% { filter: brightness(1.2); }
+}
+
+.volume-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.78rem;
+  font-weight: bold;
+  color: #ffffff;
+}
+
+.volume-row input {
+  width: 75px;
+  accent-color: var(--arcade-yellow);
+}
+
+/* 16ステップ LEDインジケーター（アーケードボタン風） */
+.step-tracker {
+  display: grid;
+  grid-template-columns: repeat(16, 1fr);
+  gap: 5px;
+  margin-top: 10px;
+}
+
+.step-led {
+  height: 10px;
+  background: #18151c;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+  transition: background-color 0.05s, transform 0.05s;
+}
+
+.step-led.active {
+  background: var(--arcade-yellow);
+  box-shadow: 0 0 8px var(--arcade-yellow);
+  transform: scaleY(1.3);
+}
+
+.step-led:nth-child(4n+1) {
+  border-color: var(--arcade-red);
+}
+
+/* チェックボックス */
+.checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-main);
+  cursor: pointer;
+  user-select: none;
+}
+
+.checkbox-label input[type="checkbox"] {
+  accent-color: var(--arcade-red);
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+/* ==========================================================================
+   アクションボタン群
+   ========================================================================== */
+.actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+button.primary, button.ghost {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 0.86rem;
+  font-weight: 700;
+  padding: 11px 18px;
+  cursor: pointer;
+  border: 2.5px solid var(--border-color);
+  letter-spacing: 0.04em;
+  transition: all 0.1s;
+}
+
+button.primary {
+  background: var(--arcade-red);
+  color: #ffffff;
+  box-shadow: var(--shadow-button);
+}
+
+button.primary:hover {
+  background: var(--arcade-red-dark);
+  transform: translate(-1px, -1px);
+  box-shadow: var(--shadow-solid);
+}
+
+button.primary:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0px var(--border-color);
+}
+
+button.ghost {
+  background: var(--bg-panel);
+  color: var(--text-main);
+  box-shadow: var(--shadow-button);
+}
+
+button.ghost:hover {
+  background: var(--arcade-yellow);
+  transform: translate(-1px, -1px);
+  box-shadow: var(--shadow-solid);
+}
+
+button.ghost:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0px var(--border-color);
+}
+
+/* ==========================================================================
+   プロンプト出力・言語切替エリア
+   ========================================================================== */
+.lang-toggle {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.lang-toggle button {
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 6px 14px;
+  border: 2px solid var(--border-color);
+  box-shadow: var(--shadow-small);
+  background: var(--bg-panel-alt);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.1s;
+}
+
+.lang-toggle button.on {
+  background: var(--arcade-blue);
+  color: #ffffff;
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0px var(--border-color);
+}
+
+textarea {
+  width: 100%;
+  min-height: 170px;
+  resize: vertical;
+  background: var(--bg-screen);
+  color: var(--text-main);
+  border: 2px solid var(--border-color);
+  box-shadow: inset 2px 2px 0px rgba(0, 0, 0, 0.05);
+  padding: 14px;
+  font-family: "SFMono-Regular", "JetBrains Mono", Consolas, "Noto Sans JP", monospace;
+  font-size: 0.88rem;
+  line-height: 1.65;
+  outline: none;
+}
+
+textarea:focus {
+  border-color: var(--arcade-blue);
+}
+
+.textarea-mini {
+  min-height: 70px;
+  font-size: 0.82rem;
+}
+
+.copy-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.copy-row button {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 7px 14px;
+  border: 2px solid var(--border-color);
+  box-shadow: var(--shadow-small);
+  background: var(--arcade-green);
+  color: #ffffff;
+  cursor: pointer;
+  transition: all 0.1s;
+}
+
+.copy-row button:hover {
+  filter: brightness(1.1);
+  transform: translate(-1px, -1px);
+  box-shadow: var(--shadow-button);
+}
+
+.copy-row button:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0px var(--border-color);
+}
+
+/* ==========================================================================
+   構成タイムライン
+   ========================================================================== */
+.screen {
+  background: var(--bg-screen);
+  border: 2px solid var(--border-color);
+  box-shadow: inset 2px 2px 0px rgba(0, 0, 0, 0.04);
+  max-height: 480px;
+  overflow-y: auto;
+}
+
+.screen-row {
+  display: grid;
+  grid-template-columns: 68px 1fr;
+  gap: 14px;
+  padding: 12px 16px;
+  border-bottom: 2px dashed var(--border-color);
+  align-items: baseline;
+}
+
+.screen-row:last-child {
+  border-bottom: none;
+}
+
+.screen-time {
+  color: var(--arcade-red);
+  font-size: 0.82rem;
+  font-weight: bold;
+}
+
+.screen-body .lab {
+  color: var(--text-main);
+  font-size: 0.82rem;
+  font-weight: 800;
+  display: block;
+  margin-bottom: 3px;
+  text-transform: uppercase;
+}
+
+.screen-body .desc {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.empty-note {
+  color: var(--text-muted);
+  font-size: 0.86rem;
+  padding: 18px 16px;
+}
+
+/* ==========================================================================
+   トースト通知 (Toast Notification)
+   ========================================================================== */
+.flash {
+  position: fixed;
+  bottom: calc(28px + env(safe-area-inset-bottom, 0px));
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--arcade-yellow);
+  color: #18151c;
+  border: 2.5px solid var(--border-color);
+  box-shadow: 4px 4px 0px var(--border-color);
+  padding: 10px 22px;
+  font-size: 0.86rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s, transform 0.2s;
+  z-index: 1000;
+}
+
+.flash.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* フッター */
+footer {
+  margin-top: 36px;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  text-align: center;
+  line-height: 1.8;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+footer .poster-credit {
+  font-family: "Righteous", sans-serif;
+  font-size: 0.82rem;
+  color: var(--text-main);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-top: 6px;
+}

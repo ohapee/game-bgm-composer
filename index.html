@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>ゲームBGMスクリプトコンポーザー — Bauhaus Arcade Edition</title>
+  
+  <!-- バウハウス幾何学・アーケード用 Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;600;800&family=Press+Start+2P&family=Righteous&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#e2d7ec">
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ヘッダー（バウハウス・アーケードポスター調） -->
+  <header>
+    <div class="brand-wrapper">
+      <div class="brand-icon" title="Arcade Controller">
+        <img src="assets/icon-192.png" alt="Arcade Controller Icon">
+      </div>
+      <div class="brand">
+        <div class="subtitle">Bauhaus Geometric Pixel Art / Isometric</div>
+        <h1 class="font-display">Arcade Controller — BGM Composer</h1>
+        <p class="desc">Google Flow Musicや各種音楽生成AI向けに、ゲームBGMのプロンプトと構成タイムラインを直感的にデザインするツールです。</p>
+      </div>
+    </div>
+    <div class="header-controls">
+      <button class="theme-btn" id="crtBtn" type="button" title="ブラウン管テレビ走査線エフェクト">CRT: OFF</button>
+      <button class="theme-btn" id="themeBtn" type="button">AUTO SCREEN</button>
+    </div>
+  </header>
+
+  <div class="grid">
+    <!-- 左ペイン: 設定パネル群 -->
+    <div class="left-col">
+
+      <!-- プリセット管理 -->
+      <section class="panel">
+        <h2>
+          PRESETS / プリセット
+          <span class="sub-tag">SAVE & LOAD</span>
+        </h2>
+        <div class="chip-row" id="presetChips"></div>
+        <div class="field" style="margin-top: 14px; margin-bottom: 0; display: flex; gap: 8px;">
+          <input type="text" id="presetNameInput" placeholder="プリセット名 (例: ボス戦 第2形態)">
+          <button class="ghost" id="savePresetBtn" type="button" style="white-space: nowrap;">現在設定を保存</button>
+        </div>
+        <div class="preset-tools">
+          <button class="ghost" id="exportPresetBtn" type="button">JSON書き出し</button>
+          <button class="ghost" id="importPresetBtn" type="button">JSON読み込み</button>
+          <button class="ghost" id="shareUrlBtn" type="button">共有URLコピー</button>
+          <input type="file" id="importPresetFile" accept=".json" style="display: none;">
+        </div>
+      </section>
+
+      <!-- シーン・雰囲気 -->
+      <section class="panel">
+        <h2>SCENE & MOOD / 雰囲気</h2>
+        <div class="chip-row" id="moodChips"></div>
+      </section>
+
+      <!-- 楽器・音色編成 -->
+      <section class="panel">
+        <h2>INSTRUMENTS / 楽器・音色</h2>
+        <div class="chip-row" id="instChips"></div>
+      </section>
+
+      <!-- 効果音・アクセント -->
+      <section class="panel">
+        <h2>SOUND EFFECTS / 効果音</h2>
+        <div class="chip-row" id="sfxChips"></div>
+        <div class="field" style="margin-top: 14px; margin-bottom: 0;">
+          <label class="small">効果音の出現頻度</label>
+          <select id="sfxDensity">
+            <option value="none">使わない (純粋な音楽のみ)</option>
+            <option value="occasional" selected>たまに挟む (推奨)</option>
+            <option value="frequent">頻繁に散りばめる (賑やか)</option>
+          </select>
+        </div>
+      </section>
+
+      <!-- テンポ・調性・8bitアーケードシンセプレビュアー -->
+      <section class="panel">
+        <h2>TEMPO & KEY / テンポ・調性</h2>
+        <div class="field">
+          <label class="small">テンポ (BPM)</label>
+          <div class="tempo-row">
+            <input type="range" id="tempoRange" min="70" max="160" value="120">
+            <div class="tempo-readout font-display" id="tempoReadout">120<span> BPM</span></div>
+          </div>
+        </div>
+
+        <div class="field" style="margin-bottom: 0;">
+          <label class="small">和声・スケール (調性)</label>
+          <select id="keySelect">
+            <option value="bright_major">明るいメジャー (高揚感・冒険)</option>
+            <option value="tense_minor">緊張感のあるマイナー (緊迫・ダンジョン)</option>
+            <option value="cute_penta">和風/かわいいペンタトニック (ポップ・東洋風)</option>
+            <option value="eerie_dim">不穏なディミニッシュ (ボス・怪奇)</option>
+            <option value="heroic_dorian">勇壮なドリアン旋法 (中世ファンタジー・英雄譚)</option>
+          </select>
+        </div>
+
+        <!-- 8bit音源プレビュアー (アーケードコンソール仕様) -->
+        <div class="preview-player">
+          <div class="preview-main-row">
+            <button class="preview-btn" id="previewToggleBtn" type="button">▶ 8bit試聴 (BPM・調性確認)</button>
+            <div class="volume-row">
+              <span>VOLUME</span>
+              <input type="range" id="previewVolume" min="0" max="0.8" step="0.05" value="0.2">
+            </div>
+          </div>
+          <!-- 16ステップ LEDインジケーター -->
+          <div class="step-tracker" title="ビートインジケーター">
+            <div class="step-led"></div><div class="step-led"></div><div class="step-led"></div><div class="step-led"></div>
+            <div class="step-led"></div><div class="step-led"></div><div class="step-led"></div><div class="step-led"></div>
+            <div class="step-led"></div><div class="step-led"></div><div class="step-led"></div><div class="step-led"></div>
+            <div class="step-led"></div><div class="step-led"></div><div class="step-led"></div><div class="step-led"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 盛り上がり抑制 (ループ制御) -->
+      <section class="panel">
+        <h2>RESTRAINT / 盛り上がり抑制</h2>
+        <div class="field">
+          <label class="small">抑制レベル (AIが勝手に盛り上げすぎるのを防ぐ)</label>
+          <select id="restraintSelect">
+            <option value="none">指定しない (AIにおまかせ)</option>
+            <option value="mild">ゆるめに抑える (緩やかな起伏)</option>
+            <option value="strict">しっかり抑える (完全フラット・ゲームループ用)</option>
+          </select>
+        </div>
+        <div class="field" style="margin-bottom: 0;">
+          <label class="small">具体的な抑制ルール (複数選択可)</label>
+          <div class="chip-row" id="restraintChips"></div>
+        </div>
+      </section>
+
+      <!-- ネガティブ指定 (除外したい要素) -->
+      <section class="panel">
+        <h2>NEGATIVE / 除外指定</h2>
+        <label class="small">曲に含めたくない要素 (ネガティブプロンプト)</label>
+        <div class="chip-row" id="negativeChips"></div>
+      </section>
+
+      <!-- 曲の長さ & 出力形式 -->
+      <section class="panel">
+        <h2>FORMAT / 構成・出力形式</h2>
+        <div class="field">
+          <label class="small">曲の長さ (タイムライン計算用)</label>
+          <div class="chip-row" id="durationChips"></div>
+        </div>
+        
+        <div class="field">
+          <label class="small">対象AIサービス</label>
+          <select id="aiTargetSelect">
+            <option value="flow" selected>Google Flow Music (自然言語重視)</option>
+            <option value="suno_udio">Suno / Udio (タグ指示併用形式)</option>
+            <option value="plain">シンプル文章形式</option>
+          </select>
+        </div>
+
+        <div class="field" style="margin-bottom: 0;">
+          <label class="checkbox-label">
+            <input type="checkbox" id="embedTimelineCheck">
+            <span>プロンプト本文に構成タイムラインを埋め込む</span>
+          </label>
+        </div>
+      </section>
+
+      <!-- アクションボタン群 -->
+      <div class="actions">
+        <button class="primary" id="genBtn" type="button">スクリプトを生成</button>
+        <button class="ghost" id="randomBtn" type="button">🎲 おまかせ</button>
+        <button class="ghost" id="resetBtn" type="button">リセット</button>
+      </div>
+
+    </div>
+
+    <!-- 右ペイン: プロンプト出力・タイムライン -->
+    <div class="right-col">
+
+      <!-- メインプロンプト出力 -->
+      <section class="panel">
+        <h2>GENERATED PROMPT / 生成スクリプト</h2>
+        <div class="lang-toggle" id="langToggle">
+          <button data-lang="en" class="on" type="button">English prompt (推奨)</button>
+          <button data-lang="ja" type="button">日本語プロンプト (確認用)</button>
+        </div>
+        <textarea id="promptOut" readonly placeholder="左側のパネルで各項目を設定し、「スクリプトを生成」を押してください。"></textarea>
+        <div class="copy-row">
+          <span class="small" style="color: var(--text-muted); font-size: 0.76rem;">※音楽AIは英語プロンプトの認識精度が高い傾向があります</span>
+          <button id="copyBtn" type="button">プロンプトをコピー</button>
+        </div>
+      </section>
+
+      <!-- ネガティブプロンプト出力 -->
+      <section class="panel" id="negativeSection" style="display: none;">
+        <h2>NEGATIVE PROMPT / 除外プロンプト</h2>
+        <textarea id="negativeOut" class="textarea-mini" readonly></textarea>
+        <div class="copy-row">
+          <span class="small" style="color: var(--text-muted); font-size: 0.76rem;">AIサービスの「Negative Prompt / Exclude」欄に貼り付けます</span>
+          <button id="copyNegBtn" type="button">除外指示をコピー</button>
+        </div>
+      </section>
+
+      <!-- 構成タイムライン -->
+      <section class="panel">
+        <h2>STRUCTURE TIMELINE / 構成タイムライン</h2>
+        <div class="screen" id="timeline">
+          <div class="empty-note">スクリプトを生成すると、秒数配分と構成案がここに表示されます。</div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <footer>
+    ゲームBGMスクリプトコンポーザー — Game BGM Script Composer<br>
+    <div class="poster-credit">BAUHAUS GEOMETRIC PIXEL ART / ISOMETRIC / MINIMALIST</div>
+  </footer>
+
+</div>
+
+<!-- コピー通知トースト -->
+<div class="flash" id="flash">コピーしました</div>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
