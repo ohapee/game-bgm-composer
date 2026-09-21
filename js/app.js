@@ -131,9 +131,7 @@ function generate() {
 
 function maybeRegenerate() {
   saveLastState(state);
-  if (document.getElementById('promptOut').dataset.generated === '1') {
-    generate();
-  }
+  generate();
 }
 
 // プリセットUIの再描画
@@ -309,7 +307,7 @@ function init() {
     state.moods = new Set(sampleIds(MOODS, 1, 2));
     state.insts = new Set(sampleIds(INSTRUMENTS, 3, 5));
     state.sfx = new Set(sampleIds(SFX, 1, 3));
-    state.tempo = 75 + Math.floor(Math.random() * 80);
+    state.tempo = 50 + Math.floor(Math.random() * 111); // 50〜160 BPM
     const keyIds = Object.keys(KEYS);
     state.key = keyIds[Math.floor(Math.random() * keyIds.length)];
 

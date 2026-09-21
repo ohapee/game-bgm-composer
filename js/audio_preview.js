@@ -45,29 +45,56 @@ class AudioPreviewEngine {
     }
   }
 
-  // スケールごとのピッチ周波数テーブル (Hz)
-  getScaleFrequencies(scaleType) {
-    switch (scaleType) {
-      case 'minor':
-        // Aマイナーペンタ/ナチュラルマイナー: A3, C4, D4, E4, G4, A4, C5, E5
-        return [220.00, 261.63, 293.66, 329.63, 392.00, 440.00, 523.25, 659.25];
-      case 'cute_penta':
-        // C陽音ペンタトニック: C4, D4, E4, G4, A4, C5, D5, G5
-        return [261.63, 293.66, 329.63, 392.00, 440.00, 523.25, 587.33, 783.99];
-      case 'diminished':
-        // Bディミニッシュ: B3, D4, F4, Ab4, B4, D5, F5, Ab5
-        return [246.94, 293.66, 349.23, 415.30, 493.88, 587.33, 698.46, 830.61];
-      case 'dorian':
-        // Dドリアン: D3, F3, G3, A3, C4, D4, F4, A4
-        return [146.83, 174.61, 196.00, 220.00, 261.63, 293.66, 349.23, 440.00];
-      case 'major':
-      default:
-        // Cメジャーペンタ: C4, E4, G4, A4, B4, C5, E5, G5
-        return [261.63, 329.63, 392.00, 440.00, 493.88, 523.25, 659.25, 783.99];
+  // スケールごとのピッチ周波数テーブル (Hz) とベース音の定義
+  getScaleData(keyId) {
+    // keyId が直接渡されても、またはプレフィックスなしでも解決できるようにする
+    const normalizedKey = (keyId || 'bright_major').toLowerCase();
+
+    if (normalizedKey.includes('minor') || normalizedKey === 'tense_minor') {
+      // Aマイナー (暗く緊迫したダンジョン・戦闘)
+      return {
+        freqs: [220.00, 261.63, 293.66, 329.63, 349.23, 440.00, 523.25, 659.25],
+        rootBass: 110.00,   // A2
+        fifthBass: 164.81   // E3
+      };
     }
+
+    if (normalizedKey.includes('penta') || normalizedKey === 'cute_penta') {
+      // D民謡/和風陽旋法 (和風・かわいい・ポップ感: D, F, G, A, C, D)
+      return {
+        freqs: [293.66, 349.23, 392.00, 440.00, 523.25, 587.33, 698.46, 783.99],
+        rootBass: 146.83,   // D3
+        fifthBass: 220.00   // A3
+      };
+    }
+
+    if (normalizedKey.includes('dim') || normalizedKey === 'eerie_dim') {
+      // Bディミニッシュ (短3度の積み重ねによる不穏・怪奇・ボス戦)
+      return {
+        freqs: [246.94, 293.66, 349.23, 415.30, 493.88, 587.33, 698.46, 830.61],
+        rootBass: 123.47,   // B2
+        fifthBass: 174.61   // F3 (減5度による強烈な不協和音)
+      };
+    }
+
+    if (normalizedKey.includes('dorian') || normalizedKey === 'heroic_dorian') {
+      // Dドリアン旋法 (中世ファンタジー・勇壮・冒険)
+      return {
+        freqs: [220.00, 246.94, 261.63, 293.66, 329.63, 392.00, 440.00, 493.88],
+        rootBass: 146.83,   // D3
+        fifthBass: 220.00   // A3
+      };
+    }
+
+    // デフォルト: Cメジャー (明るいメジャー、高揚感)
+    return {
+      freqs: [261.63, 293.66, 329.63, 392.00, 440.00, 523.25, 587.33, 659.25],
+      rootBass: 130.81,     // C3
+      fifthBass: 196.00     // G3
+    };
   }
 
-  // 8bit矩形波の単音再生
+  // 8bit矩形波リードの単音再生
   playSquareTone(freq, time, duration, gainLevel = 0.25) {
     if (!this.ctx) return;
     const osc = this.ctx.createOscillator();
@@ -93,9 +120,9 @@ class AudioPreviewEngine {
     const gain = this.ctx.createGain();
 
     osc.type = 'triangle';
-    osc.frequency.setValueAtTime(freq / 2, time); // 1オクターブ下
+    osc.frequency.setValueAtTime(freq, time);
 
-    gain.gain.setValueAtTime(0.4, time);
+    gain.gain.setValueAtTime(0.45, time);
     gain.gain.exponentialRampToValueAtTime(0.01, time + duration);
 
     osc.connect(gain);
@@ -125,7 +152,7 @@ class AudioPreviewEngine {
     osc.stop(time + 0.12);
   }
 
-  // 8bitノイズスネア (ホワイトノイズ + 短いエンベロープ)
+  // 8bitノイズスネア (ホワイトノイズ + ハイパスフィルター)
   playSnare(time) {
     if (!this.ctx || !this.noiseBuffer) return;
     const noise = this.ctx.createBufferSource();
@@ -180,35 +207,35 @@ class AudioPreviewEngine {
       if (!this.isPlaying) return;
 
       const state = getStateFn();
-      const bpm = Number(state.tempo) || 120;
+      const bpm = Math.max(50, Number(state.tempo) || 120);
       // 16分音符の秒数
       const stepDuration = (60 / bpm) / 4;
       const now = this.ctx.currentTime;
       const step = this.currentStep;
 
-      const scaleType = state.key ? state.key.replace('bright_', '').replace('tense_', '').replace('cute_', '').replace('eerie_', '').replace('heroic_', '') : 'major';
-      const freqs = this.getScaleFrequencies(scaleType);
+      // 現在選択されている調性データ（音階・ベース周波数）を毎ステップ取得
+      const scaleData = this.getScaleData(state.key);
+      const freqs = scaleData.freqs;
 
       // 16ステップ（4拍分）のシーケンスパターン
-      // ドラムパターン
+      // 1. ドラムパターン
       if (step % 4 === 0) {
         // 拍の頭: キック
         if (step === 0 || step === 8) this.playKick(now);
+        // 2拍目・4拍目: スネア
         if (step === 4 || step === 12) this.playSnare(now);
       }
       if (step % 2 === 0) {
         this.playHihat(now);
       }
 
-      // ベースパターン (8分音符間隔)
+      // 2. ベースパターン (8分音符間隔でルート音と第5音を刻む)
       if (step % 2 === 0) {
-        const rootFreq = freqs[0];
-        const fifthFreq = freqs[2] || freqs[0];
-        const bassNote = (step === 8 || step === 10) ? fifthFreq : rootFreq;
+        const bassNote = (step === 8 || step === 10) ? scaleData.fifthBass : scaleData.rootBass;
         this.playTriangleBass(bassNote, now, stepDuration * 1.8);
       }
 
-      // アルペジオメロディ (16分音符)
+      // 3. アルペジオメロディ (16分音符でスケール音をピコピコ刻む)
       const arpeggioIdx = [0, 2, 4, 7, 5, 4, 2, 1, 0, 3, 5, 7, 6, 4, 3, 1][step % 16];
       const freq = freqs[arpeggioIdx % freqs.length];
       this.playSquareTone(freq, now, stepDuration * 0.9, 0.18);
