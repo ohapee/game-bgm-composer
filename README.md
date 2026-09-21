@@ -11,6 +11,10 @@ Google Flow Musicなどの音楽生成AI向けに、ゲーム用BGMのプロン�
 
 さらに、ブラウザ標準の音源合成機能（Web Audio API）により、選択したテンポや調性で8bitピコピコ音がリアルタイムに試聴できるプレビュー機能を搭載しています。
 
+### オンライン公開URL
+- **GitHub Pages**: [https://ohapee.github.io/game-bgm-composer/](https://ohapee.github.io/game-bgm-composer/)
+  （PC・スマホのどちらのブラウザからでも直接アクセス可能です）
+
 ---
 
 ## 主な機能とデザインの特徴
