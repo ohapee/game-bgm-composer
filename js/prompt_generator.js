@@ -34,6 +34,9 @@ export function buildTimelineData(state) {
   const useSfx = state.density !== 'none' && sfx.length > 0;
   const restrained = state.restraintLevel !== 'none' || state.restraint.size > 0;
 
+  const isSparse = state.moods.has('sparse_notes') || state.moods.has('minimalism');
+  const isKawaii = state.moods.has('hyper_kawaii');
+
   const coreInsts = insts.length ? insts : [{ ja: '8bit矩形波リード', en: 'an 8-bit square lead' }];
   const sfxA = sfx[0] || { ja: '決定/カーソル音', en: 'a menu-confirm blip' };
   const sfxB = sfx[1] || sfx[0] || { ja: 'キラキラ音', en: 'a sparkle chime' };
@@ -51,28 +54,50 @@ export function buildTimelineData(state) {
   let sections = [];
   if (durationDef.stinger) {
     sections = lang === 'ja' ? [
-      { label: 'アタック (立ち上がり)', ratio: 0.35, desc: `${coreInsts.map(i => i.ja).join('・')}で一気に立ち上がる。` },
-      { label: 'ピーク (最高潮)', ratio: 0.35, desc: useSfx ? `盛り上がりの頂点に${sfxA.ja}を配置。` : '一番の盛り上がりとメロディの提示。' },
+      { label: 'アタック (立ち上がり)', ratio: 0.35, desc: isSparse
+        ? `${coreInsts.map(i => i.ja).join('・')}が余白たっぷりにポツリと立ち上がる。`
+        : `${coreInsts.map(i => i.ja).join('・')}で一気に立ち上がる。` },
+      { label: 'ピーク (最高潮)', ratio: 0.35, desc: useSfx
+        ? `盛り上がりの頂点に${sfxA.ja}を配置。`
+        : (isKawaii ? '愛らしく甘いメロディの提示。' : '一番の盛り上がりとメロディの提示。') },
       { label: '着地 (終了・余韻)', ratio: 0.30, desc: useSfx ? `短く着地し${sfxB.ja}で締める。` : '潔く短く着地して完結。' }
     ] : [
-      { label: 'Attack (Entrance)', ratio: 0.35, desc: `Sharp entrance driven by ${coreInsts.map(i => i.en).join(', ')}.` },
-      { label: 'Peak (Highlight)', ratio: 0.35, desc: useSfx ? `High energy accent with ${sfxA.en}.` : 'Peak focal point and main motif.' },
+      { label: 'Attack (Entrance)', ratio: 0.35, desc: isSparse
+        ? `Delicate, sparse entrance driven gently by ${coreInsts.map(i => i.en).join(', ')}.`
+        : `Sharp entrance driven by ${coreInsts.map(i => i.en).join(', ')}.` },
+      { label: 'Peak (Highlight)', ratio: 0.35, desc: useSfx
+        ? `High energy accent with ${sfxA.en}.`
+        : (isKawaii ? 'Sweet and ultra-cute melodic motif.' : 'Peak focal point and main motif.') },
       { label: 'Landing (Cadence)', ratio: 0.30, desc: useSfx ? `Crisp resolution accented with ${sfxB.en}.` : 'Clean and crisp final resolution.' }
     ];
   } else {
     sections = lang === 'ja' ? [
-      { label: 'イントロ (導入)', ratio: 0.15, desc: `${coreInsts.map(i => i.ja).join('・')}が入ってくる短い導入部。` },
-      { label: 'メインループ (主旋律)', ratio: 0.50, desc: useSfx ? `安定したリズムと主題。時々${sfxA.ja}が挟まる。` : '安定したリズムと主旋律のループ。' },
-      { label: '変化/フィル (展開)', ratio: 0.20, desc: restrained
-        ? (useSfx ? `盛り上げすぎず一部音色のみ抜き差し、${sfxB.ja}を控えめなアクセントに。` : '音圧やテンポは変えず、一部の音色のみ控えめに抜き差しして変化をつける。')
-        : (useSfx ? `音色を抜き差しして適度に変化をつけ、${sfxB.ja}で装飾。` : '楽器のレイヤーを適度に切り替えてバリエーションを提示。') },
-      { label: 'ループ地点 (折り返し)', ratio: 0.15, desc: '先頭へシームレスに繋ぐための短いブリッジ処理。' }
+      { label: 'イントロ (導入)', ratio: 0.15, desc: isSparse
+        ? `${coreInsts.map(i => i.ja).join('・')}の極力少ない音数で静かに始まる導入部。`
+        : `${coreInsts.map(i => i.ja).join('・')}が入ってくる短い導入部。` },
+      { label: 'メインループ (主旋律)', ratio: 0.50, desc: isSparse
+        ? (useSfx ? `音数を最小限に抑え、静寂と優しい音色のスキマを活かした構成。時々${sfxA.ja}が小さく鳴る。` : '音数を極力減らし、音と音の間の静かな余白をたっぷり取ったミニマルな主旋律。')
+        : (useSfx ? `安定したリズムと主題。時々${sfxA.ja}が挟まる。` : '安定したリズムと主旋律のループ。') },
+      { label: '変化/フィル (展開)', ratio: 0.20, desc: isSparse
+        ? (useSfx ? `音数は増やさず余白をキープし、${sfxB.ja}を控えめに添えて繊細に変化。` : '音の数は増やさず、静かな余白を保ったまま一部の音色のみそっと差し替える。')
+        : (restrained
+          ? (useSfx ? `盛り上げすぎず一部音色のみ抜き差し、${sfxB.ja}を控えめなアクセントに。` : '音圧やテンポは変えず、一部の音色のみ控えめに抜き差しして変化をつける。')
+          : (useSfx ? `音色を抜き差しして適度に変化をつけ、${sfxB.ja}で装飾。` : '楽器のレイヤーを適度に切り替えてバリエーションを提示。')) },
+      { label: 'ループ地点 (折り返し)', ratio: 0.15, desc: isSparse
+        ? '静寂の余韻を残しながら先頭へ自然に繋ぐループ処理。'
+        : '先頭へシームレスに繋ぐための短いブリッジ処理。' }
     ] : [
-      { label: 'Intro (Stinger)', ratio: 0.15, desc: `Short opening layer starting with ${coreInsts.map(i => i.en).join(', ')}.` },
-      { label: 'Main Loop (Theme)', ratio: 0.50, desc: useSfx ? `Steady game groove, sprinkled occasionally with ${sfxA.en}.` : 'Steady thematic groove and melody.' },
-      { label: 'Variation / Fill', ratio: 0.20, desc: restrained
-        ? (useSfx ? `Light instrument changes without raising intensity, subtly accented by ${sfxB.en}.` : 'Subtle timbre variation without increasing dynamics or intensity.')
-        : (useSfx ? `Dynamic layer rotation accented by ${sfxB.en}.` : 'Moderate arrangement variation.') },
+      { label: 'Intro (Stinger)', ratio: 0.15, desc: isSparse
+        ? `Quiet opening with minimal delicate notes from ${coreInsts.map(i => i.en).join(', ')}.`
+        : `Short opening layer starting with ${coreInsts.map(i => i.en).join(', ')}.` },
+      { label: 'Main Loop (Theme)', ratio: 0.50, desc: isSparse
+        ? (useSfx ? `Ultra-minimal groove with maximum space, gently accented by ${sfxA.en}.` : 'Sparse, minimal melody leaving plenty of silent breathing room.')
+        : (useSfx ? `Steady game groove, sprinkled occasionally with ${sfxA.en}.` : 'Steady thematic groove and melody.') },
+      { label: 'Variation / Fill', ratio: 0.20, desc: isSparse
+        ? (useSfx ? `Subtle shift without adding notes, gently touched by ${sfxB.en}.` : 'Gentle variation maintaining sparse note density and plenty of breathing space.')
+        : (restrained
+          ? (useSfx ? `Light instrument changes without raising intensity, subtly accented by ${sfxB.en}.` : 'Subtle timbre variation without increasing dynamics or intensity.')
+          : (useSfx ? `Dynamic layer rotation accented by ${sfxB.en}.` : 'Moderate arrangement variation.')) },
       { label: 'Loop Point (Turnaround)', ratio: 0.15, desc: 'Smooth bridge designed to cycle back to the beginning seamlessly.' }
     ];
   }
@@ -110,6 +135,10 @@ export function buildPrompt(state) {
   const hasRestraint = state.restraintLevel !== 'none' || restraintOpts.length > 0;
   const aiTarget = state.aiTarget || 'flow';
 
+  const isKawaii = state.moods.has('hyper_kawaii');
+  const isSparse = state.moods.has('sparse_notes');
+  const isMinimal = state.moods.has('minimalism');
+
   let prompt = '';
 
   const title = (state.trackTitle || '').trim();
@@ -130,14 +159,25 @@ export function buildPrompt(state) {
 
     const titlePrefix = title ? `曲名「${title}」の世界観を表現した、` : '';
 
+    // 特殊スタイルの追加指定
+    const styleFeatures = [];
+    if (isKawaii) styleFeatures.push('とってもかわいく愛らしいメルヘンポップな世界観');
+    if (isSparse) styleFeatures.push('音の数を極力減らして音と音の間の静寂・余白をたっぷりと活かす');
+    if (isMinimal) styleFeatures.push('無駄な音を削ぎ落とした洗練されたミニマム系構成');
+    const styleExtraText = styleFeatures.length ? `【特記事項: ${styleFeatures.join('、')}】` : '';
+
     if (aiTarget === 'suno_udio') {
       const headerTitle = title ? `[タイトル: ${title}] ` : '';
-      prompt = `${headerTitle}[スタイル: 8-bit チップチューン, ${state.tempo} BPM, ${key.baseNote}調]\n` +
+      const genreTag = isKawaii ? 'Hyper-kawaii チップチューン, かわいいゲームBGM' : '8-bit チップチューン';
+      const extraTags = [isSparse ? '音数極小' : '', isMinimal ? 'ミニマル' : ''].filter(Boolean).join(', ');
+      const fullTags = extraTags ? `[スタイル: ${genreTag}, ${extraTags}, ${state.tempo} BPM, ${key.baseNote}調]` : `[スタイル: ${genreTag}, ${state.tempo} BPM, ${key.baseNote}調]`;
+
+      prompt = `${headerTitle}${fullTags}\n` +
         `${titlePrefix}ゲームBGM。雰囲気は${moodText}。` +
-        `編成: ${instText}。${key.ja}を使用${sfxText}。${restraintText}`;
+        `編成: ${instText}。${key.ja}を使用${sfxText}。${restraintText} ${styleExtraText}`.trim();
     } else {
       prompt = `${titlePrefix}テンポ${state.tempo}BPMのゲームBGM。${moodText}な雰囲気。` +
-        `編成は${instText}を中心に、${key.ja}を使用${sfxText}。${restraintText}`;
+        `編成は${instText}を中心に、${key.ja}を使用${sfxText}。${restraintText} ${styleExtraText}`.trim();
     }
 
     // タイムラインの埋め込みオプションが有効な場合
@@ -165,13 +205,23 @@ export function buildPrompt(state) {
 
     const titleThemed = title ? ` themed around "${title}",` : '';
 
+    const styleDescriptors = [];
+    if (isKawaii) styleDescriptors.push('ultra-cute hyper-kawaii aesthetic');
+    if (isSparse) styleDescriptors.push('extremely sparse note count with lots of silent space');
+    if (isMinimal) styleDescriptors.push('refined minimalist simplicity');
+    const styleExtraDesc = styleDescriptors.length ? ` Featuring an emphasis on ${joinList(styleDescriptors, 'en')}.` : '';
+
     if (aiTarget === 'suno_udio') {
       const headerTitle = title ? `[Title: ${title}] ` : '';
-      prompt = `${headerTitle}[Genre: 8-bit Chiptune, Video Game OST] [Tempo: ${state.tempo} BPM] [Key: ${key.baseNote} ${key.scaleType}]\n` +
-        `A video game track${titleThemed} with ${moodText}. Built around ${instText}, featuring ${key.en}.${sfxText}${restraintText}`;
+      const genreTags = ['8-bit Chiptune', 'Video Game OST'];
+      if (isKawaii) genreTags.unshift('Hyper-kawaii Cute Pop');
+      if (isMinimal || isSparse) genreTags.push('Minimalist');
+      
+      prompt = `${headerTitle}[Genre: ${genreTags.join(', ')}] [Tempo: ${state.tempo} BPM] [Key: ${key.baseNote} ${key.scaleType}]\n` +
+        `A video game track${titleThemed} with ${moodText}. Built around ${instText}, featuring ${key.en}.${sfxText}${restraintText}${styleExtraDesc}`;
     } else {
       prompt = `A ${state.tempo} BPM video game background music track${titleThemed} with ${moodText}. ` +
-        `Built around ${instText}, with ${key.en}.${sfxText}${restraintText}`;
+        `Built around ${instText}, with ${key.en}.${sfxText}${restraintText}${styleExtraDesc}`;
     }
 
     // タイムライン埋め込み

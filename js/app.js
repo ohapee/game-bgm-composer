@@ -43,7 +43,7 @@ const state = {
   key: 'bright_major',
   tempo: 120,
   duration: '60',
-  lang: 'en',
+  lang: 'ja',
   aiTarget: 'flow',
   embedTimeline: false
 };

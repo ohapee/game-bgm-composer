@@ -1,9 +1,8 @@
-/**
- * ストレージ管理モジュール (localStorage / JSON入出力 / URL共有)
- */
+import { DEFAULT_PRESETS } from './data.js';
 
 const LAST_STATE_KEY = 'gamebgm-composer-laststate-v2';
 const PRESETS_KEY = 'gamebgm-composer-presets-v2';
+const DELETED_DEFAULTS_KEY = 'gamebgm-composer-deleted-defaults-v2';
 
 /**
  * 状態をシリアライズ可能なプレーンオブジェクトに変換
@@ -56,9 +55,26 @@ export function loadLastState() {
 export function getPresets() {
   try {
     const raw = localStorage.getItem(PRESETS_KEY);
-    return raw ? JSON.parse(raw) : {};
+    const presets = raw ? JSON.parse(raw) : {};
+    
+    // 削除済みデフォルトキーの確認
+    const deletedRaw = localStorage.getItem(DELETED_DEFAULTS_KEY);
+    const deletedDefaults = new Set(deletedRaw ? JSON.parse(deletedRaw) : []);
+
+    let needsSave = false;
+    for (const [key, val] of Object.entries(DEFAULT_PRESETS)) {
+      if (!presets[key] && !deletedDefaults.has(key)) {
+        presets[key] = val;
+        needsSave = true;
+      }
+    }
+    if (needsSave) {
+      localStorage.setItem(PRESETS_KEY, JSON.stringify(presets));
+    }
+
+    return presets;
   } catch (e) {
-    return {};
+    return { ...DEFAULT_PRESETS };
   }
 }
 
@@ -85,7 +101,17 @@ export function deletePreset(name) {
   const presets = getPresets();
   if (presets[name]) {
     delete presets[name];
-    localStorage.setItem(PRESETS_KEY, JSON.stringify(presets));
+    try {
+      localStorage.setItem(PRESETS_KEY, JSON.stringify(presets));
+      if (DEFAULT_PRESETS[name]) {
+        const deletedRaw = localStorage.getItem(DELETED_DEFAULTS_KEY);
+        const deletedDefaults = new Set(deletedRaw ? JSON.parse(deletedRaw) : []);
+        deletedDefaults.add(name);
+        localStorage.setItem(DELETED_DEFAULTS_KEY, JSON.stringify([...deletedDefaults]));
+      }
+    } catch (e) {
+      console.warn('削除の保存に失敗しました:', e);
+    }
     return true;
   }
   return false;

@@ -15,7 +15,10 @@ export const MOODS = [
   { id: 'cave', ja: '洞窟/地下(静寂・神秘的)', en: 'a mysterious, echoey cavern ambiance', enShort: 'mysterious cavern feel' },
   { id: 'victory', ja: '勝利ファンファーレ(歓喜)', en: 'a short, celebratory victory-fanfare energy', enShort: 'victory-fanfare energy' },
   { id: 'gameover', ja: 'ゲームオーバー(哀愁・悔恨)', en: 'a melancholy, short game-over tune', enShort: 'melancholic game-over feel' },
-  { id: 'ending', ja: 'エンディング(感動・余韻)', en: 'an emotional, nostalgic ending-credits feel', enShort: 'emotional ending feel' }
+  { id: 'ending', ja: 'エンディング(感動・余韻)', en: 'an emotional, nostalgic ending-credits feel', enShort: 'emotional ending feel' },
+  { id: 'hyper_kawaii', ja: 'Hyper-kawaii(超絶かわいい)', en: 'an ultra-cute, hyper-kawaii aesthetic with sweet, sparkling, and bubbly playful charm', enShort: 'ultra-cute hyper-kawaii charm' },
+  { id: 'sparse_notes', ja: '音の数を極力減らす(余白・隙間)', en: 'extremely sparse note density, maximizing silence, breathing room, and minimalist space between minimal delicate notes', enShort: 'extremely sparse note density with lots of space' },
+  { id: 'minimalism', ja: 'ミニマム系(シンプル・ミニマル)', en: 'a refined minimalist aesthetic, stripped-down pure instrumentation, clean and uncluttered space', enShort: 'minimalist stripped-down simplicity' }
 ];
 
 // 楽器・音色定義
@@ -31,7 +34,9 @@ export const INSTRUMENTS = [
   { id: 'pluck_synth', ja: 'プラック系シンセ', en: 'plucky synth arpeggios' },
   { id: 'bell', ja: 'ベル/チャイム', en: 'sparkling bell chimes' },
   { id: 'strings', ja: '軽めのオーケストラストリングス', en: 'light orchestral strings' },
-  { id: 'saw_synth', ja: 'ノコギリ波シンセ', en: 'a buzzy sawtooth synth' }
+  { id: 'saw_synth', ja: 'ノコギリ波シンセ', en: 'a buzzy sawtooth synth' },
+  { id: 'toy_piano', ja: 'トイピアノ/オルゴール', en: 'sweet toy piano & music box tones' },
+  { id: 'bubble_sine', ja: 'ぷくぷくサイン波/ピュアトーン', en: 'bubbly cute pure-sine water drops' }
 ];
 
 // 効果音（SFX）定義
@@ -46,17 +51,19 @@ export const SFX = [
   { id: 'levelup', ja: 'レベルアップ音', en: 'a triumphant level-up fanfare blip' },
   { id: 'explosion', ja: '爆発音', en: 'a punchy 8-bit explosion hit' },
   { id: 'sparkle', ja: 'キラキラ音', en: 'a twinkling sparkle chime' },
+  { id: 'heart_chime', ja: 'ハートキラキラ音(キュート)', en: 'a sweet pastel heart sparkle chime' },
   { id: 'damage', ja: 'ダメージ音', en: 'a harsh damage buzz' },
   { id: 'alarm', ja: '警告アラート音', en: 'a pulsating retro warning beep' }
 ];
 
 // 和声・調性定義
 export const KEYS = {
-  bright_major: { ja: '明るいメジャーの高揚感あるハーモニー', en: 'bright, uplifting major-key harmony', baseNote: 'C', scaleType: 'major' },
-  tense_minor:  { ja: '緊張感のあるマイナー調ハーモニー', en: 'tense minor-key harmony', baseNote: 'A', scaleType: 'minor' },
-  cute_penta:   { ja: '和風でかわいいペンタトニックのメロディ', en: 'a cute, pentatonic melody', baseNote: 'C', scaleType: 'pentatonic' },
-  eerie_dim:    { ja: '不穏なディミニッシュスケールの緊張感', en: 'unsettling, diminished-scale tension', baseNote: 'B', scaleType: 'diminished' },
-  heroic_dorian:{ ja: '勇壮で冒険心あふれるドリアン旋法', en: 'an adventurous, heroic Dorian modal vibe', baseNote: 'D', scaleType: 'dorian' }
+  bright_major:  { ja: '明るいメジャーの高揚感あるハーモニー', en: 'bright, uplifting major-key harmony', baseNote: 'C', scaleType: 'major' },
+  kawaii_major7: { ja: '甘くドリーミーなメジャー7th (Hyper-kawaii)', en: 'sweet, dreamy major 7th harmony with pastel aesthetic', baseNote: 'F', scaleType: 'major7' },
+  tense_minor:   { ja: '緊張感のあるマイナー調ハーモニー', en: 'tense minor-key harmony', baseNote: 'A', scaleType: 'minor' },
+  cute_penta:    { ja: '和風でかわいいペンタトニックのメロディ', en: 'a cute, pentatonic melody', baseNote: 'C', scaleType: 'pentatonic' },
+  eerie_dim:     { ja: '不穏なディミニッシュスケールの緊張感', en: 'unsettling, diminished-scale tension', baseNote: 'B', scaleType: 'diminished' },
+  heroic_dorian: { ja: '勇壮で冒険心あふれるドリアン旋法', en: 'an adventurous, heroic Dorian modal vibe', baseNote: 'D', scaleType: 'dorian' }
 };
 
 // 効果音の挿入頻度
@@ -73,7 +80,8 @@ export const RESTRAINT_OPTS = [
   { id: 'no_fills', ja: 'ドラムフィルインを最小限で控えめに', en: 'keep drum fills minimal, subtle, and restrained' },
   { id: 'no_key_change', ja: '転調や劇的な展開を作らない', en: 'avoid sudden key changes or dramatic developments' },
   { id: 'loop_consistent', ja: '最初から最後まで均一な強度を保つ', en: 'maintain the same intensity throughout, with no rising arc' },
-  { id: 'minimal_layers', ja: '途中で楽器数を増やしすぎない', en: 'keep instrument layers consistent without cluttering over time' }
+  { id: 'minimal_layers', ja: '途中で楽器数を増やしすぎない', en: 'keep instrument layers consistent without cluttering over time' },
+  { id: 'sparse_space', ja: '音数を最小限に絞り、余白(スキマ)を重視する', en: 'strictly minimize active voices, leaving plenty of empty space and silence' }
 ];
 
 // 盛り上がり抑制レベル
@@ -90,6 +98,8 @@ export const NEGATIVE_OPTIONS = [
   { id: 'trap_beats', ja: 'トラップビート・現代的なハイハット連打', en: 'trap hi-hat rolls, modern trap beats' },
   { id: 'distortion', ja: '強い歪み・過度なオーバードライブ', en: 'heavy distortion, harsh overdrive, noisy clipping' },
   { id: 'orchestral_epic', ja: '重厚すぎる実写映画風オーケストラ', en: 'heavy cinematic orchestral blast, dramatic brass swells' },
+  { id: 'busy_dense', ja: '密度の高すぎる音・騒がしいパーカッション', en: 'dense layers, busy complex arrangement, noisy aggressive percussion' },
+  { id: 'dark_tones', ja: '暗い響き・不穏なコード進行', en: 'dark scary mood, dissonant tension, heavy aggressive tones' },
   { id: 'fade_out', ja: 'フェードアウト（末尾の自然減衰）', en: 'fade out at the end, trailing off' }
 ];
 
@@ -131,5 +141,80 @@ export const TITLE_SUGGESTIONS = [
   '深海都市アトランティス',
   '大空をかける飛空艇',
   'ラストバトル〜運命の審判',
-  '黄昏のエンディングロール'
+  '黄昏のエンディングロール',
+  'こんぺいとうの夢の国',
+  'ふわふわマシュマロ雲のお茶会',
+  '仔猫のひるねとピコピコワルツ',
+  'すいーと・ぴこぴこ・るーむ',
+  'パステルキャンディ・ポップ',
+  'しずかな夜のトイボックス',
+  '星屑ドロップのステップ'
 ];
+
+// 標準プリセット定義
+export const DEFAULT_PRESETS = {
+  '🎀 Hyper-kawaii ミニマル': {
+    trackTitle: 'こんぺいとうの夢の国',
+    moods: ['hyper_kawaii', 'sparse_notes', 'minimalism'],
+    insts: ['bell', 'pluck_synth', 'triangle_bass', 'toy_piano'],
+    sfx: ['sparkle', 'heart_chime', 'pico'],
+    density: 'occasional',
+    restraintLevel: 'strict',
+    restraint: ['minimal_layers', 'flat_dynamics', 'sparse_space'],
+    negatives: ['vocals', 'modern_edm', 'distortion', 'orchestral_epic', 'busy_dense', 'dark_tones'],
+    key: 'kawaii_major7',
+    tempo: 96,
+    duration: '60',
+    lang: 'ja',
+    aiTarget: 'flow',
+    embedTimeline: false
+  },
+  '🌸 パステルパズル (かわいい)': {
+    trackTitle: 'パステルキャンディ・ポップ',
+    moods: ['puzzle', 'hyper_kawaii'],
+    insts: ['marimba', 'pluck_synth', 'toy_piano', 'triangle_bass'],
+    sfx: ['puyon', 'sparkle'],
+    density: 'occasional',
+    restraintLevel: 'mild',
+    restraint: ['no_buildup'],
+    negatives: ['vocals', 'modern_edm', 'distortion'],
+    key: 'cute_penta',
+    tempo: 108,
+    duration: '60',
+    lang: 'ja',
+    aiTarget: 'flow',
+    embedTimeline: false
+  },
+  '🏰 王道フィールド冒険': {
+    trackTitle: '始まりの街角',
+    moods: ['field'],
+    insts: ['square_lead', 'arpeggio', 'fm_bass', 'retro_drums'],
+    sfx: ['coin', 'jump', 'pico'],
+    density: 'occasional',
+    restraintLevel: 'none',
+    restraint: [],
+    negatives: ['vocals'],
+    key: 'bright_major',
+    tempo: 120,
+    duration: '60',
+    lang: 'ja',
+    aiTarget: 'flow',
+    embedTimeline: false
+  },
+  '⚡ 緊迫ボスバトル': {
+    trackTitle: '決戦のコロシアム',
+    moods: ['boss', 'battle'],
+    insts: ['saw_synth', 'fm_bass', 'noise_drums', 'arpeggio'],
+    sfx: ['explosion', 'alarm'],
+    density: 'occasional',
+    restraintLevel: 'none',
+    restraint: [],
+    negatives: ['vocals', 'fade_out'],
+    key: 'eerie_dim',
+    tempo: 145,
+    duration: '60',
+    lang: 'ja',
+    aiTarget: 'flow',
+    embedTimeline: false
+  }
+};

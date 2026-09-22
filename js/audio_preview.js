@@ -50,6 +50,15 @@ class AudioPreviewEngine {
     // keyId が直接渡されても、またはプレフィックスなしでも解決できるようにする
     const normalizedKey = (keyId || 'bright_major').toLowerCase();
 
+    if (normalizedKey.includes('kawaii') || normalizedKey === 'kawaii_major7') {
+      // Fメジャー7th (甘くドリーミーなKawaii・パステル感: F, A, C, E, G, A, C, E)
+      return {
+        freqs: [349.23, 440.00, 523.25, 659.25, 783.99, 880.00, 1046.50, 1318.51],
+        rootBass: 174.61,   // F3
+        fifthBass: 261.63   // C4
+      };
+    }
+
     if (normalizedKey.includes('minor') || normalizedKey === 'tense_minor') {
       // Aマイナー (暗く緊迫したダンジョン・戦闘)
       return {
@@ -217,28 +226,57 @@ class AudioPreviewEngine {
       const scaleData = this.getScaleData(state.key);
       const freqs = scaleData.freqs;
 
+      const isSparse = state.moods && (state.moods.has('sparse_notes') || state.moods.has('minimalism'));
+      const isKawaii = state.moods && state.moods.has('hyper_kawaii');
+
       // 16ステップ（4拍分）のシーケンスパターン
-      // 1. ドラムパターン
-      if (step % 4 === 0) {
-        // 拍の頭: キック
-        if (step === 0 || step === 8) this.playKick(now);
-        // 2拍目・4拍目: スネア
-        if (step === 4 || step === 12) this.playSnare(now);
-      }
-      if (step % 2 === 0) {
-        this.playHihat(now);
-      }
+      if (isSparse) {
+        // --- ミニマム・音数最小限パターン (間と余白を贅沢に活かしたサウンド) ---
+        // 1. ドラム: 1小節に1回の極めて控えめなソフトキックと、遠くのハイハットのみ
+        if (step === 0) {
+          this.playKick(now);
+        } else if (step === 8) {
+          this.playHihat(now);
+        }
 
-      // 2. ベースパターン (8分音符間隔でルート音と第5音を刻む)
-      if (step % 2 === 0) {
-        const bassNote = (step === 8 || step === 10) ? scaleData.fifthBass : scaleData.rootBass;
-        this.playTriangleBass(bassNote, now, stepDuration * 1.8);
-      }
+        // 2. ベース: 小節頭でのみふわっと優しく支える
+        if (step === 0) {
+          this.playTriangleBass(scaleData.rootBass, now, stepDuration * 6);
+        }
 
-      // 3. アルペジオメロディ (16分音符でスケール音をピコピコ刻む)
-      const arpeggioIdx = [0, 2, 4, 7, 5, 4, 2, 1, 0, 3, 5, 7, 6, 4, 3, 1][step % 16];
-      const freq = freqs[arpeggioIdx % freqs.length];
-      this.playSquareTone(freq, now, stepDuration * 0.9, 0.18);
+        // 3. メロディ: 16分音符を埋め尽くさず、ポツリ…ポツリ…と余白を残して響かせる
+        // 16ステップ中、わずか3音のみ発音
+        if (step === 2 || step === 6 || step === 12) {
+          const sparseIdx = step === 2 ? 0 : (step === 6 ? 4 : 7);
+          let freq = freqs[sparseIdx % freqs.length];
+          if (isKawaii) freq *= 1.5; // よりキュートで透明感のあるピッチ
+          this.playSquareTone(freq, now, stepDuration * 2.5, 0.14);
+        }
+      } else {
+        // --- 通常の8bitアーケードパターン ---
+        // 1. ドラムパターン
+        if (step % 4 === 0) {
+          // 拍の頭: キック
+          if (step === 0 || step === 8) this.playKick(now);
+          // 2拍目・4拍目: スネア
+          if (step === 4 || step === 12) this.playSnare(now);
+        }
+        if (step % 2 === 0) {
+          this.playHihat(now);
+        }
+
+        // 2. ベースパターン (8分音符間隔でルート音と第5音を刻む)
+        if (step % 2 === 0) {
+          const bassNote = (step === 8 || step === 10) ? scaleData.fifthBass : scaleData.rootBass;
+          this.playTriangleBass(bassNote, now, stepDuration * 1.8);
+        }
+
+        // 3. アルペジオメロディ (16分音符でスケール音をピコピコ刻む)
+        const arpeggioIdx = [0, 2, 4, 7, 5, 4, 2, 1, 0, 3, 5, 7, 6, 4, 3, 1][step % 16];
+        let freq = freqs[arpeggioIdx % freqs.length];
+        if (isKawaii) freq *= (step % 4 === 0 ? 1 : 1.25);
+        this.playSquareTone(freq, now, stepDuration * 0.9, 0.18);
+      }
 
       if (onStepCallback) {
         onStepCallback(step % 16);
